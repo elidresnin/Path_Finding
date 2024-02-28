@@ -17,6 +17,7 @@ PURPLE = (128, 0, 128)  # path
 ORANGE = (255, 165, 0)  # start
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)  # end
+green_count = 255
 
 
 # A Spot is a location or box on the grid. Each spot will keep track of its color and neighboring Spots among other things.
@@ -25,7 +26,9 @@ class Spot:
         self.row = row
         self.col = col
         self.color = WHITE
-        self.neightbors = []
+        self.neighbors = []
+        self.parent = None
+        self.visited = False
 
     def get_pos(self):
         return self.row, self.col
@@ -49,7 +52,10 @@ class Spot:
         self.color = WHITE
 
     def make_checked(self):
-        self.color = GREEN
+        global green_count
+        self.color = (0, green_count, 0)
+        green_count -= 1
+        green_count %= 255
 
     def make_barrier(self):
         self.color = BLACK
@@ -61,7 +67,8 @@ class Spot:
         self.color = TURQUOISE
 
     def make_path(self):
-        self.color = PURPLE
+        if not self.is_start() and not self.is_end():
+            self.color = PURPLE
 
     def draw(self):
         pygame.draw.rect(WIN, self.color,
@@ -79,11 +86,11 @@ class Spot:
         if self.col < ROWS - 1 and not grid[self.row][self.col + 1].is_barrier():
             self.neighbors.append(grid[self.row][self.col + 1])
         # left
-        if self.row > 0 and not grid[self.row][self.col - 1].is_barrier():
+        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():
             self.neighbors.append(grid[self.row][self.col - 1])
 
 
-# manhattan ditance - l distance - the quickest l - taxy cab distance
+# manhattan distance - l distance - the quickest l - taxi cab distance
 def h(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
@@ -128,6 +135,34 @@ def get_clicked_pos(pos):
     col = x // gap
     return row, col
 
+def reconstruct_path(grid, end):
+    end.make_path()
+    draw(grid)
+    if end.parent is not None:
+        reconstruct_path(grid, end.parent)
+def random_search(grid, start, end):
+    q = PriorityQueue()
+    q.put((0, start))
+    start.visited = True
+    count = 1
+    # keep looking at nodes until we've either run out of nodes or have reached the end.
+    while q:
+        node = q.get()[1]  # gets the first node from the queue
+        if node is not start and node is not end:
+            node.make_checked()
+
+        if node is end:
+            reconstruct_path(grid, node.parent)
+            return
+        else:
+            for n in node.neighbors:
+                if not n.visited:
+                    n.parent = node
+                    n.visited = True
+                    q.put((count, n))
+                    count += 1
+
+        draw(grid)
 
 def main():
     # main loop
@@ -170,6 +205,7 @@ def main():
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
+                    random_search(grid, start, end)
     pygame.quit()
 
 
