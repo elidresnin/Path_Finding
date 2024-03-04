@@ -29,6 +29,14 @@ class Spot:
         self.neighbors = []
         self.parent = None
         self.visited = False
+        self.h_score = float('inf')
+        self.g_score = float('inf')
+
+    def __lt__(self, other):
+        if self.h_score + self.g_score == other.g_score + other.h_score:
+            return self.h_score < other.h_score
+        else:
+            return self.h_score + self.g_score < other.h_score + other.g_score
 
     def get_pos(self):
         return self.row, self.col
@@ -49,13 +57,19 @@ class Spot:
         return self.color == PURPLE
 
     def reset(self):
-        self.color = WHITE
+        if not self.is_start() and not self.is_end() and not self.is_barrier():
+            self.color = WHITE
+            self.visited = False
+            self.parent = None
+        elif self.is_end():
+            self.visited = False
+            self.parent = None
 
     def make_checked(self):
         global green_count
         self.color = (0, green_count, 0)
-        green_count -= 1
-        green_count %= 255
+        #green_count -= 1
+        #green_count %= 255
 
     def make_barrier(self):
         self.color = BLACK
@@ -92,9 +106,7 @@ class Spot:
 
 # manhattan distance - l distance - the quickest l - taxi cab distance
 def h(p1, p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return abs(x1 - x2) + abs(y1 - y2)
+    return abs(p1.row - p2.row) + abs(p1.col - p2.col)
 
 
 # make a grid of spots
@@ -139,27 +151,89 @@ def reconstruct_path(grid, end):
     end.make_path()
     draw(grid)
     if end.parent is not None:
-        reconstruct_path(grid, end.parent)
-def random_search(grid, start, end):
-    q = PriorityQueue()
-    q.put((0, start))
-    start.visited = True
-    count = 1
-    # keep looking at nodes until we've either run out of nodes or have reached the end.
+        return 1 + reconstruct_path(grid, end.parent)
+    else:
+        return 0
+def a_star(grid, start, end):
+    # q = PriorityQueue()
+    q = [start]
+    start.h_score = h(start, end)
+    start.g_score = 0
+    visited_count = 2
+
     while q:
-        node = q.get()[1]  # gets the first node from the queue
-        if node is not start and node is not end:
+        visited_count += 1
+        q.sort()
+        node = q.pop(0)
+        if not node.is_start() and not node.is_end():
             node.make_checked()
 
         if node is end:
-            reconstruct_path(grid, node.parent)
+            print("a star path = " + str(reconstruct_path(grid, node.parent)))
+            print("a star visited " + str(visited_count) + " nodes.")
+            return
+        else:
+            for n in node.neighbors:
+                if n.g_score > node.g_score + 1:
+                    n.parent = node
+                    n.h_score = h(n, end)
+                    n.g_score = node.g_score + 1
+                    if n not in q:
+                        q.append(n)
+
+        draw(grid)
+
+
+def greedy_search(grid, start, end):
+    q = PriorityQueue()
+    q.put(start)
+    start.h_score = h(start, end)
+    start.visited = True
+    visited_count = 2
+    while q:
+        visited_count += 1
+        node = q.get()
+        if not node.is_start() and not node.is_end():
+            node.make_checked()
+
+        if node is end:
+            print("greedy path = " + str(reconstruct_path(grid, node.parent)))
+            print("greedy visited " + str(visited_count) + " nodes.")
             return
         else:
             for n in node.neighbors:
                 if not n.visited:
                     n.parent = node
                     n.visited = True
-                    q.put((count, n))
+                    n.h_score = h(n, end)
+                    q.put(n)
+        draw(grid)
+
+def bfs_search(grid, start, end):
+    q = PriorityQueue()
+    q.put(start)
+    start.h_score = 0
+    start.visited = True
+    count = 1
+    visited_count = 2
+    # keep looking at nodes until we've either run out of nodes or have reached the end.
+    while q:
+        visited_count += 1
+        node = q.get()  # gets the first node from the queue
+        if not node.is_start() and not node.is_end():
+            node.make_checked()
+
+        if node is end:
+            print("bfs path = " + str(reconstruct_path(grid, node.parent)))
+            print("bfs visited " + str(visited_count) + " nodes.")
+            return
+        else:
+            for n in node.neighbors:
+                if not n.visited:
+                    n.parent = node
+                    n.visited = True
+                    n.h_score = count
+                    q.put(n)
                     count += 1
 
         draw(grid)
@@ -173,7 +247,7 @@ def main():
 
     run = True
     started = False
-
+    search_count = 0
     while run:
         draw(grid)
         for event in pygame.event.get():  # loop through events from pygame
@@ -201,11 +275,31 @@ def main():
                     spot.make_barrier()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not started:
+                if event.key == pygame.K_SPACE and not started and search_count == 0:
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
-                    random_search(grid, start, end)
+                    bfs_search(grid, start, end)
+                    search_count += 1
+                elif event.key == pygame.K_SPACE and not started and search_count == 1:
+                    for row in grid:
+                        for spot in row:
+                            spot.update_neighbors(grid)
+                    greedy_search(grid, start, end)
+                    search_count += 1
+                elif event.key == pygame.K_SPACE and not started and search_count == 2:
+                    for row in grid:
+                        for spot in row:
+                            spot.update_neighbors(grid)
+                    a_star(grid, start, end)
+                    search_count = 0
+
+                elif event.key == pygame.K_r:
+                    for row in grid:
+                        for spot in row:
+                            spot.reset()
+                    draw(grid)
+
     pygame.quit()
 
 
