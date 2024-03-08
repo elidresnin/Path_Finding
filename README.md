@@ -11,7 +11,7 @@ The Breadth First Search (BFS) algorithm is used to search a graph data structur
 <h2>Depth First Search</h2>
 Depth-first search (DFS) is an algorithm for traversing or searching tree or graph data structures. The algorithm starts at the root node (selecting some arbitrary node as the root node in the case of a graph) and explores as far as possible along each branch before backtracking.
 
-<img src='dfs.png' width='250'>
+<img src='depth.png' width='250'>
 
 <h2>Greedy Search</h2>
 Greedy best-first search is an informed search algorithm where the evaluation function is strictly equal to the heuristic function, disregarding the edge weights in a weighted graph because only the heuristic value is considered.
