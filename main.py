@@ -1,5 +1,7 @@
 import pygame
 from queue import PriorityQueue
+import sys
+sys.setrecursionlimit(10**6)
 
 # constants that will be used to draw the grid.
 WIDTH = 800
