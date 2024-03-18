@@ -19,11 +19,10 @@ Greedy best-first search is an informed search algorithm where the evaluation fu
 <img src='images/greedy.png' width='400'>
 
 <h3>Dijkstra Search</h3>
-Dijkstra's algorithm is an algorithm for finding the shortest paths between nodes in a weighted graph, which may represent, for example, road networks. It was conceived by computer scientist Edsger W. Dijkstra in 1956 and published three years later.
-
-The algorithm exists in many variants. Dijkstra's original algorithm found the shortest path between two given nodes, but a more common variant fixes a single node as the "source" node and finds shortest paths from the source to all other nodes in the graph, producing a shortest-path tree.
+Dijkstra's algorithm was conceived by computer scientist Edsger W. Dijkstra in 1956 and published three years later. The difference between Dijkstra and BFS is that with BFS we have a simple FIFO queue, and the next node to visit is the first node that was added in the queue. But, using Dijkstra, we need to pull the node with the lowest cost so far. When all edges have the same length, the two algorithms will look identical. When running Dijkstra's on the default maze, your algorithm should check 2112 nodes, and construct a path of length 47.
 <br><br>
-<img src='images/Dijkstra.png' width='400'>
+<img src='images/bfs.png' width='400'>
+
 
 <h3>A-Star Search</h3>
 A* Search is an informed best-first search algorithm that efficiently determines the lowest cost path between any two nodes in a directed weighted graph with non-negative edge weights. This algorithm is a variant of Dijkstra’s algorithm. A slight difference arises from the fact that an evaluation function is used to determine which node to explore next. When running a-star on the default maze, your algorithm should check 288 nodes, and construct a path of length 47.
