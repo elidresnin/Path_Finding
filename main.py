@@ -187,88 +187,14 @@ def default_board(grid, start, end, started):
     return (start, end)
 
 def a_star(grid, start, end):
-    # q = PriorityQueue()
-    q = [start]
-    start.h_score = h(start, end)
-    start.g_score = 0
-    visited_count = 2
-
-    while q:
-        visited_count += 1
-        q.sort()
-        node = q.pop(0)
-        if not node.is_start() and not node.is_end():
-            node.make_checked()
-
-        if node is end:
-            print("a star path = " + str(reconstruct_path(grid, node.parent)))
-            print("a star visited " + str(visited_count) + " nodes.")
-            return
-        else:
-            for n in node.neighbors:
-                if n.g_score > node.g_score + 1:
-                    n.parent = node
-                    n.h_score = h(n, end)
-                    n.g_score = node.g_score + 1
-                    if n not in q:
-                        q.append(n)
-
-        draw(grid)
+    pass
 
 
 def greedy_search(grid, start, end):
-    q = PriorityQueue()
-    q.put(start)
-    start.h_score = h(start, end)
-    start.visited = True
-    visited_count = 2
-    while q:
-        visited_count += 1
-        node = q.get()
-        if not node.is_start() and not node.is_end():
-            node.make_checked()
-
-        if node is end:
-            print("greedy path = " + str(reconstruct_path(grid, node.parent)))
-            print("greedy visited " + str(visited_count) + " nodes.")
-            return
-        else:
-            for n in node.neighbors:
-                if not n.visited:
-                    n.parent = node
-                    n.visited = True
-                    n.h_score = h(n, end)
-                    q.put(n)
-        draw(grid)
-
+    pass
+    
 def bfs_search(grid, start, end):
-    q = PriorityQueue()
-    q.put(start)
-    start.h_score = 0
-    start.visited = True
-    count = 1
-    visited_count = 2
-    # keep looking at nodes until we've either run out of nodes or have reached the end.
-    while q:
-        visited_count += 1
-        node = q.get()  # gets the first node from the queue
-        if not node.is_start() and not node.is_end():
-            node.make_checked()
-
-        if node is end:
-            print("bfs path = " + str(reconstruct_path(grid, node.parent)))
-            print("bfs visited " + str(visited_count) + " nodes.")
-            return
-        else:
-            for n in node.neighbors:
-                if not n.visited:
-                    n.parent = node
-                    n.visited = True
-                    n.h_score = count
-                    q.put(n)
-                    count += 1
-
-        draw(grid)
+    pass
 
 def main():
     # main loop
