@@ -222,6 +222,34 @@ def bfs_search(grid, start, end):
 
     draw(grid) # update grid any time we're done looking at a node.
 
+def dfs_search(grid, start, end):
+    q = PriorityQueue()
+    q.put(start) # sets start spot
+    start.g_score = 0
+    start.visited = True
+    visited_count = 1 # will be used to determine how many spots are algorith visits before finding the end node.
+
+    # keep looking at spots until we've either run out of spots to look at or we've reached the end.
+    while q: # shorthand way of saying if there's anything still in priority queue.
+        visited_count += 1
+        current_spot = q.get() # gets the first spot from the queue based on priority.
+        if not current_spot.is_start() and not current_spot.is_end():
+            current_spot.make_checked() # changes color to green
+
+        if current_spot.is_end():
+            print("dfs path = " + str(reconstruct_path(grid, current_spot.parent))) #reconstruct path
+            print("dfs visited " + str(visited_count))
+            return
+
+        else:
+            for s in current_spot.neighbors: # put neighbor in priority queue.
+                if not s.visited:
+                    s.parent = current_spot   # setting s's parent to the sport that we just visited. Will be used when we reconstruct the path.
+                    s.visited = True    # set visited to true so we don't revisit later.
+                    s.g_score = current_spot.g_score + 1    # set it's g_score to one more than current_spot because it took us one more step. (g_score is the number of steps needed)
+                    q.put(s)        # add s to the priority queue
+
+    draw(grid) # up
 
 
 
@@ -274,7 +302,7 @@ def main():
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
-                    greedy_search(grid, start, end)
+                    dfs_search(grid, start, end)
                     search_count += 1
                 elif event.key == pygame.K_SPACE and not started and search_count == 2:
                     for row in grid:
