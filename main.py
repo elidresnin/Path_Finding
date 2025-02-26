@@ -234,15 +234,15 @@ def greedy_search(grid, start, end):
             current_spot.make_checked()  # changes color to green
 
         if current_spot.is_end():
-            print("a star path = " + str(reconstruct_path(grid, current_spot.parent)))  # reconstruct path
-            print("star visited " + str(visited_count))
+            print("greedy path = " + str(reconstruct_path(grid, current_spot.parent)))  # reconstruct path
+            print("greedy visited " + str(visited_count))
             return
 
         else:
             for s in current_spot.neighbors:  # put neighbor in priority queue.
                 if not s.visited:
                     s.parent = current_spot  # setting s's parent to the sport that we just visited. Will be used when we reconstruct the path.
-      #              s.g_score = current_spot.g_score + 1
+                    s.g_score = 0
                     s.h_score = h(s, end)
                     s.visited = True  # set visited to true so we don't revisit later.
                     q.put(s)  # add s to the priority queue
@@ -352,7 +352,7 @@ def main():
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
-                    bfs_search(grid, start, end)
+                    greedy_search(grid, start, end)
                     search_count += 1
                 elif event.key == pygame.K_SPACE and not started and search_count == 1:
                     for row in grid:
