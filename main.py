@@ -307,7 +307,36 @@ def dfs_search(grid, start, end):
 
         draw(grid) # up
 
+def dijkstra(grid, start, end):
+    q = PriorityQueue()
+    start.g_score = 0
+    start.h_score = h(start, end)
+    q.put(start)  # sets start spot
+    start.visited = True
+    visited_count = 1  # will be used to determine how many spots are algorith visits before finding the end node.
 
+    # keep looking at spots until we've either run out of spots to look at or we've reached the end.
+    while q:  # shorthand way of saying if there's anything still in priority queue.
+        visited_count += 1
+        current_spot = q.get()  # Dequeue the node based on priority -> fscore
+        if not current_spot.is_start() and not current_spot.is_end():
+            current_spot.make_checked()  # changes color to green
+
+        if current_spot.is_end():
+            print("a star path = " + str(reconstruct_path(grid, current_spot.parent)))  # reconstruct path
+            print("star visited " + str(visited_count))
+            return
+
+        else:
+            for s in current_spot.neighbors:  # put neighbor in priority queue.
+                if not s.visited:
+                    s.parent = current_spot  # setting s's parent to the sport that we just visited. Will be used when we reconstruct the path.
+                    s.g_score = current_spot.g_score + 1
+                    s.h_score = 0
+                    s.visited = True  # set visited to true so we don't revisit later.
+                    q.put(s)  # add s to the priority queue
+
+        draw(grid)  # update grid any time we're done looking at a node.
 
 def main():
     # main loop
@@ -352,7 +381,7 @@ def main():
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
-                    greedy_search(grid, start, end)
+                    dijkstra(grid, start, end)
                     search_count += 1
                 elif event.key == pygame.K_SPACE and not started and search_count == 1:
                     for row in grid:
