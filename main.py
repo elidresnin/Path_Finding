@@ -6,7 +6,7 @@ sys.setrecursionlimit(10**6)
 # constants that will be used to draw the grid.
 WIDTH = 800
 ROWS = 50
-WIN = pygame.display.set_mode((WIDTH, WIDTH))
+WIN = pygame.display.set_mode((WIDTH, WIDTH +100))
 pygame.display.set_caption("Path Finding Algorithms")
 
 RED = (255, 0, 0)
@@ -22,6 +22,9 @@ TURQUOISE = (64, 224, 208)  # end
 green_count = 255
 
 
+
+
+
 # A Spot is a location or box on the grid. Each spot will keep track of its color and neighboring Spots among other things.
 class Spot:
     def __init__(self, row, col):
@@ -33,6 +36,14 @@ class Spot:
         self.visited = False
         self.h_score = float('inf')
         self.g_score = float('inf')
+        self.visited_from_start = False
+        self.visited_from_end = False
+        self.parent_start = None
+        self.parent_end = None
+        self.g_score_start = float('inf')
+        self.h_score_start = float('inf')
+        self.g_score_end = float('inf')
+        self.h_score_end = float('inf')
 
     def __lt__(self, other):
         if self.h_score + self.g_score == other.g_score + other.h_score:
@@ -157,6 +168,9 @@ def reconstruct_path(grid, end):
     else:
         return 0
 
+
+
+
 def default_board(grid, start, end, started):
     spot = grid[20][20]
     spot.make_start()
@@ -277,8 +291,6 @@ def bfs_search(grid, start, end):
 
         draw(grid) # update grid any time we're done looking at a node.
 
-
-
 def dfs_search(grid, start, end):
     stack = []
     stack.append(start)     # sets start spot
@@ -323,8 +335,8 @@ def dijkstra(grid, start, end):
             current_spot.make_checked()  # changes color to green
 
         if current_spot.is_end():
-            print("a star path = " + str(reconstruct_path(grid, current_spot.parent)))  # reconstruct path
-            print("star visited " + str(visited_count))
+            print("dijkstra path = " + str(reconstruct_path(grid, current_spot.parent)))  # reconstruct path
+            print("dijkstra visited " + str(visited_count))
             return
 
         else:
@@ -337,6 +349,81 @@ def dijkstra(grid, start, end):
                     q.put(s)  # add s to the priority queue
 
         draw(grid)  # update grid any time we're done looking at a node.
+
+def bidirectional_a_star(grid, start, end):
+    q_start = PriorityQueue()
+    q_end = PriorityQueue()
+
+    set_start = set()
+    set_end = set()
+
+    start.g_score = 0
+    end.g_score = 0
+
+    start.h_score = h(start, end)
+    end.h_score = h(end, start)
+
+    set_start.add(start)
+    set_end.add(end)
+
+    q_start.put(start)
+    q_end.put(end)
+
+    visited = 2
+
+    while q_start or q_end:
+        current_start = q_start.get()
+        current_end = q_end.get()
+
+        if not current_start.is_start() and not current_start.is_end():
+            current_start.make_checked()
+            visited += 1
+
+        if not current_end.is_start() and not current_end.is_end():
+            current_end.make_checked()
+            visited += 1
+
+        if current_start.is_end():
+            print("bidirectional a star path = " + str(reconstruct_path(grid, current_start.parent)))
+            print("bidirectional a star visited  " + str(visited))
+            return
+
+        if current_end.is_start():
+            print("bidirectional a star path = " + str(reconstruct_path(grid, current_end.parent)))
+            print("bidirectional a star visited  " + str(visited))
+            return
+
+        for s in current_start.neighbors:
+            if s in set_end:
+                print("bidirectional a star  path from start = " + str(reconstruct_path(grid, s)))
+                s.parent = current_start
+                print("bidirectional a star path from end = " + str(reconstruct_path(grid, current_start)))
+                print("bidirectional a star visited " + str(visited))
+                return
+
+            if s not in set_start:
+                s.parent = current_start
+                s.g_score = current_start.g_score + 1
+                s.h_score = h(s, end)
+                set_start.add(s)
+                q_start.put(s)
+
+        for s in current_end.neighbors:
+            if s in set_start:
+                print("bidirectional a star path from end = " + str(reconstruct_path(grid, s)))
+                s.parent = current_end
+                print("bidirectional a star path from start = " + str(reconstruct_path(grid, current_end)))
+                print("bidirectional a star visited " + str(visited))
+                return
+
+            if s not in set_end:
+                s.parent = current_end
+                s.g_score = current_end.g_score + 1
+                s.h_score = h(s, start)
+                set_end.add(s)
+                q_end.put(s)
+
+        draw(grid)
 
 def main():
     # main loop
@@ -381,19 +468,37 @@ def main():
                     for row in grid:
                         for spot in row:
                             spot.update_neighbors(grid)
-                    dijkstra(grid, start, end)
+                    bidirectional_a_star(grid, start, end)
                     search_count += 1
                 elif event.key == pygame.K_SPACE and not started and search_count == 1:
                     for row in grid:
                         for spot in row:
                             spot.reset()
-                    dfs_search(grid, start, end)
+                    a_star(grid, start, end)
                     search_count += 1
                 elif event.key == pygame.K_SPACE and not started and search_count == 2:
                     for row in grid:
                         for spot in row:
                             spot.reset()
-                    a_star(grid, start, end)
+                    dijkstra(grid, start, end)
+                    search_count +=1
+                elif event.key == pygame.K_SPACE and not started and search_count == 3:
+                    for row in grid:
+                        for spot in row:
+                            spot.reset()
+                    greedy_search(grid, start, end)
+                    search_count +=1
+                elif event.key == pygame.K_SPACE and not started and search_count == 4:
+                    for row in grid:
+                        for spot in row:
+                            spot.reset()
+                    bfs_search(grid, start, end)
+                    search_count += 1
+                elif event.key == pygame.K_SPACE and not started and search_count == 5:
+                    for row in grid:
+                        for spot in row:
+                            spot.reset()
+                    dfs_search(grid, start, end)
                     search_count = 0
 
                 elif event.key == pygame.K_r:
